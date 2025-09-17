@@ -15,8 +15,12 @@ import Standards from "./pages/governance/Standards";
 import Committees from "./pages/governance/Committees";
 import RiskDashboard from "./pages/risk/RiskDashboard";
 import RiskRegister from "./pages/risk/RiskRegister";
+import RiskAssessment from "./pages/risk/RiskAssessment";
+import TreatmentPlans from "./pages/risk/TreatmentPlans";
 import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
 import AuditManagement from "./pages/compliance/AuditManagement";
+import ComplianceFrameworks from "./pages/compliance/ComplianceFrameworks";
+import EvidenceRepository from "./pages/compliance/EvidenceRepository";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,14 +49,14 @@ const App = () => (
           {/* Risk Module Routes */}
           <Route path="/risk" element={<Layout><RiskDashboard /></Layout>} />
           <Route path="/risk/register" element={<Layout><RiskRegister /></Layout>} />
-          <Route path="/risk/assessments" element={<Layout><div className="p-6"><h1 className="text-2xl font-bold">Risk Assessments</h1><p className="text-muted-foreground">Conduct and manage risk assessments</p></div></Layout>} />
-          <Route path="/risk/treatment" element={<Layout><div className="p-6"><h1 className="text-2xl font-bold">Treatment Plans</h1><p className="text-muted-foreground">Risk treatment and mitigation plans</p></div></Layout>} />
+          <Route path="/risk/assessments" element={<Layout><RiskAssessment /></Layout>} />
+          <Route path="/risk/treatment-plans" element={<Layout><TreatmentPlans /></Layout>} />
           
           {/* Compliance Module Routes */}
           <Route path="/compliance" element={<Layout><ComplianceDashboard /></Layout>} />
-          <Route path="/compliance/frameworks" element={<Layout><div className="p-6"><h1 className="text-2xl font-bold">Compliance Frameworks</h1><p className="text-muted-foreground">Manage compliance frameworks and standards</p></div></Layout>} />
+          <Route path="/compliance/frameworks" element={<Layout><ComplianceFrameworks /></Layout>} />
           <Route path="/compliance/audits" element={<Layout><AuditManagement /></Layout>} />
-          <Route path="/compliance/evidence" element={<Layout><div className="p-6"><h1 className="text-2xl font-bold">Evidence Repository</h1><p className="text-muted-foreground">Manage compliance evidence and documentation</p></div></Layout>} />
+          <Route path="/compliance/evidence" element={<Layout><EvidenceRepository /></Layout>} />
           
           {/* Settings */}
           <Route path="/settings" element={<Layout><div className="p-6"><h1 className="text-2xl font-bold">Settings</h1><p className="text-muted-foreground">System configuration and preferences</p></div></Layout>} />
