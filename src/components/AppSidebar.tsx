@@ -100,7 +100,7 @@ export function AppSidebar() {
   };
 
   const getNavClasses = (isActive: boolean) => {
-    return `flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
+    return `flex items-center gap-3 px-3 py-3 mx-1 rounded-lg transition-all duration-200 ${
       isActive
         ? "bg-primary text-primary-foreground shadow-glow"
         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -108,9 +108,9 @@ export function AppSidebar() {
   };
 
   const getSubmenuClasses = (isActive: boolean) => {
-    return `flex items-center space-x-3 p-2 pl-6 rounded-lg transition-all duration-200 ${
+    return `flex items-center gap-3 px-6 py-2.5 mx-1 rounded-lg transition-all duration-200 ${
       isActive
-        ? "bg-primary/10 text-primary border-l-2 border-primary"
+        ? "bg-primary/10 text-primary border-l-2 border-primary ml-2"
         : "text-sidebar-foreground hover:bg-sidebar-accent/50"
     }`;
   };
@@ -122,11 +122,11 @@ export function AppSidebar() {
       }`}
       collapsible="icon"
     >
-      <SidebarContent className="p-4">
+      <SidebarContent className="p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           {!collapsed && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-3">
               <Shield className="h-8 w-8 text-primary" />
               <div>
                 <h1 className="text-lg font-bold text-sidebar-foreground">CISO Assistant</h1>
@@ -139,18 +139,18 @@ export function AppSidebar() {
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : "px-3 pb-3 text-xs font-medium text-sidebar-foreground/70"}>
             Main Modules
           </SidebarGroupLabel>
           
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1">
               {mainModules.map((module) => {
                 const isModuleActive = isActiveModule(module.url);
                 const isExpanded = expandedModule === module.title || isModuleActive;
                 
                 return (
-                  <div key={module.title}>
+                  <div key={module.title} className="space-y-1">
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild className="p-0">
                         <div>
@@ -165,9 +165,9 @@ export function AppSidebar() {
                           >
                             <module.icon className="h-5 w-5 flex-shrink-0" />
                             {!collapsed && (
-                              <div className="flex-1">
-                                <div className="font-medium">{module.title}</div>
-                                <div className="text-xs opacity-70">{module.description}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">{module.title}</div>
+                                <div className="text-xs opacity-70 truncate">{module.description}</div>
                               </div>
                             )}
                           </NavLink>
@@ -177,7 +177,7 @@ export function AppSidebar() {
 
                     {/* Submenu */}
                     {!collapsed && isExpanded && (
-                      <div className="mt-1 space-y-1">
+                      <div className="space-y-1 pb-2">
                         {module.submenu.map((item) => (
                           <SidebarMenuItem key={item.url}>
                             <SidebarMenuButton asChild className="p-0">
@@ -185,8 +185,8 @@ export function AppSidebar() {
                                 to={item.url}
                                 className={getSubmenuClasses(isActiveSubmenu(item.url))}
                               >
-                                <item.icon className="h-4 w-4" />
-                                <span className="text-sm">{item.title}</span>
+                                <item.icon className="h-4 w-4 flex-shrink-0" />
+                                <span className="text-sm truncate">{item.title}</span>
                               </NavLink>
                             </SidebarMenuButton>
                           </SidebarMenuItem>
@@ -201,15 +201,15 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Settings Section */}
-        <div className="mt-auto pt-4 border-t border-sidebar-border">
+        <div className="mt-auto pt-6 border-t border-sidebar-border">
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="p-0">
               <NavLink
                 to="/settings"
                 className={getNavClasses(currentPath === "/settings")}
               >
-                <Settings className="h-5 w-5" />
-                {!collapsed && <span>Settings</span>}
+                <Settings className="h-5 w-5 flex-shrink-0" />
+                {!collapsed && <span className="truncate">Settings</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
