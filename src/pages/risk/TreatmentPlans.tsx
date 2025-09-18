@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useData } from "@/contexts/DataContext";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Target, 
   Plus, 
@@ -21,100 +23,124 @@ import {
   Eye,
   Edit,
   Download,
-  TrendingUp
+  TrendingUp,
+  Trash2
 } from "lucide-react";
 
 export default function TreatmentPlans() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [treatmentFilter, setTreatmentFilter] = useState("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    title: "",
+    riskId: "",
+    riskTitle: "",
+    treatmentType: "",
+    priority: "",
+    owner: "",
+    budget: "",
+    targetDate: "",
+    description: ""
+  });
 
-  const treatmentPlans = [
-    {
-      id: "TP-2024-001",
-      title: "Multi-Factor Authentication Implementation",
-      riskId: "RISK-2024-001",
-      riskTitle: "Ransomware Attack on Critical Systems",
-      treatmentType: "Mitigate",
-      status: "In Progress",
-      progress: 65,
-      priority: "High",
-      owner: "IT Security Team",
-      budget: "$150,000",
-      budgetUsed: "$97,500",
-      startDate: "2024-01-01",
-      targetDate: "2024-03-31",
-      actualCompletion: null,
-      controls: ["MFA Deployment", "User Training", "Policy Updates"],
-      milestones: 8,
-      completedMilestones: 5,
-      effectiveness: 85,
-      lastUpdated: "2024-01-15"
-    },
-    {
-      id: "TP-2024-002",
-      title: "Vendor Security Assessment Program",
-      riskId: "RISK-2024-002", 
-      riskTitle: "Third-Party Data Breach",
-      treatmentType: "Transfer",
+  const { treatmentPlans, addTreatmentPlan, updateTreatmentPlan, deleteTreatmentPlan, risks } = useData();
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const planData = {
+      title: formData.title,
+      riskId: formData.riskId,
+      riskTitle: formData.riskTitle,
+      treatmentType: formData.treatmentType,
       status: "Planning",
-      progress: 20,
-      priority: "Medium",
-      owner: "Vendor Management",
-      budget: "$75,000",
-      budgetUsed: "$15,000",
-      startDate: "2024-02-01",
-      targetDate: "2024-06-30",
-      actualCompletion: null,
-      controls: ["Security Questionnaires", "Contract Updates", "Insurance Requirements"],
-      milestones: 6,
-      completedMilestones: 1,
-      effectiveness: 0,
-      lastUpdated: "2024-01-12"
-    },
-    {
-      id: "TP-2024-003",
-      title: "Employee Security Awareness Enhancement",
-      riskId: "RISK-2024-003",
-      riskTitle: "Insider Threat - Data Exfiltration",
-      treatmentType: "Mitigate",
-      status: "Completed",
-      progress: 100,
-      priority: "High",
-      owner: "HR Security",
-      budget: "$50,000",
-      budgetUsed: "$48,750",
-      startDate: "2023-10-01",
-      targetDate: "2023-12-31",
-      actualCompletion: "2023-12-28",
-      controls: ["Security Training", "Background Checks", "Access Controls"],
+      progress: 0,
+      priority: formData.priority,
+      owner: formData.owner,
+      budget: formData.budget,
+      budgetUsed: "$0",
+      startDate: new Date().toISOString().split('T')[0],
+      targetDate: formData.targetDate,
+      controls: [],
       milestones: 5,
-      completedMilestones: 5,
-      effectiveness: 92,
-      lastUpdated: "2023-12-28"
-    },
-    {
-      id: "TP-2024-004",
-      title: "Cloud Infrastructure Hardening",
-      riskId: "RISK-2024-004",
-      riskTitle: "Cloud Security Misconfiguration",
-      treatmentType: "Mitigate",
-      status: "Overdue",
-      progress: 45,
-      priority: "Critical",
-      owner: "Cloud Team",
-      budget: "$200,000",
-      budgetUsed: "$120,000",
-      startDate: "2023-11-01",
-      targetDate: "2024-01-31",
-      actualCompletion: null,
-      controls: ["Configuration Management", "Monitoring Tools", "Access Reviews"],
-      milestones: 10,
-      completedMilestones: 4,
-      effectiveness: 60,
-      lastUpdated: "2024-01-14"
+      completedMilestones: 0,
+      effectiveness: 0,
+      lastUpdated: new Date().toISOString().split('T')[0]
+    };
+
+    if (editingPlan) {
+      updateTreatmentPlan(editingPlan.id, planData);
+      toast({
+        title: "Treatment Plan Updated",
+        description: "The treatment plan has been successfully updated.",
+      });
+    } else {
+      addTreatmentPlan(planData);
+      toast({
+        title: "Treatment Plan Created",
+        description: "New treatment plan has been successfully created.",
+      });
     }
-  ];
+
+    setIsDialogOpen(false);
+    setEditingPlan(null);
+    setFormData({
+      title: "",
+      riskId: "",
+      riskTitle: "",
+      treatmentType: "",
+      priority: "",
+      owner: "",
+      budget: "",
+      targetDate: "",
+      description: ""
+    });
+  };
+
+  const handleEdit = (plan) => {
+    setEditingPlan(plan);
+    setFormData({
+      title: plan.title,
+      riskId: plan.riskId,
+      riskTitle: plan.riskTitle,
+      treatmentType: plan.treatmentType,
+      priority: plan.priority,
+      owner: plan.owner,
+      budget: plan.budget,
+      targetDate: plan.targetDate,
+      description: plan.description || ""
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    deleteTreatmentPlan(id);
+    toast({
+      title: "Treatment Plan Deleted",
+      description: "The treatment plan has been successfully deleted.",
+      variant: "destructive"
+    });
+  };
+
+  const resetForm = () => {
+    setEditingPlan(null);
+    setFormData({
+      title: "",
+      riskId: "",
+      riskTitle: "",
+      treatmentType: "",
+      priority: "",
+      owner: "",
+      budget: "",
+      targetDate: "",
+      description: ""
+    });
+  };
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -194,36 +220,59 @@ export default function TreatmentPlans() {
             <Download className="h-4 w-4 mr-2" />
             Export Plans
           </Button>
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto" onClick={() => setIsDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Treatment Plan
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Create New Treatment Plan</DialogTitle>
+                <DialogTitle>
+                  {editingPlan ? "Edit Treatment Plan" : "Create New Treatment Plan"}
+                </DialogTitle>
                 <DialogDescription>
                   Define a comprehensive plan to treat identified risks through appropriate controls
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-6 py-4">
+              <form onSubmit={handleSubmit} className="grid gap-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="plan-title">Treatment Plan Title *</Label>
-                    <Input id="plan-title" placeholder="e.g., Multi-Factor Authentication Implementation" />
+                    <Input 
+                      id="plan-title" 
+                      placeholder="e.g., Multi-Factor Authentication Implementation"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="risk-selection">Associated Risk *</Label>
-                    <Select>
+                    <Select 
+                      value={formData.riskId} 
+                      onValueChange={(value) => {
+                        const selectedRisk = risks.find(r => r.id === value);
+                        setFormData({
+                          ...formData, 
+                          riskId: value,
+                          riskTitle: selectedRisk ? selectedRisk.title : ""
+                        });
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select risk to treat" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="RISK-2024-001">RISK-2024-001 - Ransomware Attack</SelectItem>
-                        <SelectItem value="RISK-2024-002">RISK-2024-002 - Third-Party Data Breach</SelectItem>
-                        <SelectItem value="RISK-2024-003">RISK-2024-003 - Insider Threat</SelectItem>
+                        {risks.map(risk => (
+                          <SelectItem key={risk.id} value={risk.id}>
+                            {risk.id} - {risk.title}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -232,43 +281,52 @@ export default function TreatmentPlans() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="treatment-type">Treatment Type *</Label>
-                    <Select>
+                    <Select 
+                      value={formData.treatmentType} 
+                      onValueChange={(value) => setFormData({...formData, treatmentType: value})}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select treatment" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="mitigate">Mitigate</SelectItem>
-                        <SelectItem value="transfer">Transfer</SelectItem>
-                        <SelectItem value="accept">Accept</SelectItem>
-                        <SelectItem value="avoid">Avoid</SelectItem>
+                        <SelectItem value="Mitigate">Mitigate</SelectItem>
+                        <SelectItem value="Transfer">Transfer</SelectItem>
+                        <SelectItem value="Accept">Accept</SelectItem>
+                        <SelectItem value="Avoid">Avoid</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select>
+                    <Select 
+                      value={formData.priority} 
+                      onValueChange={(value) => setFormData({...formData, priority: value})}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="critical">Critical</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="Critical">Critical</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="owner">Plan Owner</Label>
-                    <Select>
+                    <Select 
+                      value={formData.owner} 
+                      onValueChange={(value) => setFormData({...formData, owner: value})}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Assign owner..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="it-security">IT Security Team</SelectItem>
-                        <SelectItem value="vendor-mgmt">Vendor Management</SelectItem>
-                        <SelectItem value="hr-security">HR Security</SelectItem>
-                        <SelectItem value="cloud-team">Cloud Team</SelectItem>
+                        <SelectItem value="IT Security Team">IT Security Team</SelectItem>
+                        <SelectItem value="Vendor Management">Vendor Management</SelectItem>
+                        <SelectItem value="HR Security">HR Security</SelectItem>
+                        <SelectItem value="Cloud Team">Cloud Team</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -277,30 +335,51 @@ export default function TreatmentPlans() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="budget">Budget</Label>
-                    <Input id="budget" placeholder="$0" />
+                    <Input 
+                      id="budget" 
+                      placeholder="$0"
+                      value={formData.budget}
+                      onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="target-date">Target Completion Date</Label>
-                    <Input id="target-date" type="date" />
+                    <Input 
+                      id="target-date" 
+                      type="date"
+                      value={formData.targetDate}
+                      onChange={(e) => setFormData({...formData, targetDate: e.target.value})}
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Treatment Description *</Label>
+                  <Label htmlFor="description">Treatment Description</Label>
                   <Textarea 
                     id="description"
                     placeholder="Describe the treatment approach, controls to be implemented, and expected outcomes..."
                     className="min-h-[100px]"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                   />
                 </div>
 
                 <div className="flex justify-end space-x-2">
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogTrigger>
-                  <Button>Create Treatment Plan</Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      resetForm();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    {editingPlan ? "Update Plan" : "Create Treatment Plan"}
+                  </Button>
                 </div>
-              </div>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
@@ -499,11 +578,20 @@ export default function TreatmentPlans() {
                     </td>
                     <td>
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEdit(plan)}
+                        >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDelete(plan.id)}
+                          className="text-danger hover:text-danger"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>
