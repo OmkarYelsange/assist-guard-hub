@@ -1,25 +1,14 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Bell, Search, User, LogOut } from "lucide-react";
+import { Bell, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useData } from "@/contexts/DataContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { user, logout } = useData();
-
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
@@ -48,30 +37,10 @@ export function Layout({ children }: LayoutProps) {
                 </span>
               </Button>
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <User className="h-5 w-5" />
-                    <span className="hidden sm:block text-sm">{user?.name}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-sm">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{user?.name}</span>
-                      <span className="text-muted-foreground">{user?.email}</span>
-                      <span className="text-xs text-muted-foreground">{user?.role}</span>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="text-danger">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <User className="h-5 w-5" />
+                <span className="hidden sm:block text-sm">CISO Administrator</span>
+              </Button>
             </div>
           </header>
 

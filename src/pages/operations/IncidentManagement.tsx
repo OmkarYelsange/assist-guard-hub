@@ -4,119 +4,105 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useData } from "@/contexts/DataContext";
+import { useToast } from "@/hooks/use-toast";
 import { 
   AlertTriangle, 
   Plus, 
   Search, 
-  Filter, 
   Download,
   Clock,
-  User,
   AlertCircle,
   CheckCircle,
   XCircle,
   Eye,
   Edit,
-  Calendar,
-  Target
+  Trash2
 } from "lucide-react";
 
 export default function IncidentManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [severityFilter, setSeverityFilter] = useState("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingIncident, setEditingIncident] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    severity: "",
+    category: "",
+    assignee: "",
+    reporter: "SOC Team"
+  });
 
-  const incidents = [
-    {
-      id: "INC-2024-001",
-      title: "Suspicious Login Attempts Detected",
-      description: "Multiple failed login attempts detected from suspicious IP addresses targeting administrative accounts.",
-      severity: "Critical",
+  const { incidents, addIncident, updateIncident, deleteIncident } = useData();
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const incidentData = {
+      ...formData,
       status: "Investigating",
-      priority: "P1",
-      assignee: "John Smith",
-      reporter: "SOC Team",
-      category: "Security Breach",
-      createdAt: "2024-01-15 09:30:00",
-      updatedAt: "2024-01-15 14:22:00",
-      sla: "2 hours remaining",
-      impact: "High",
-      urgency: "High",
-      tags: ["Authentication", "Brute Force", "Critical Infrastructure"]
-    },
-    {
-      id: "INC-2024-002",
-      title: "Malware Detection in Email System",
-      description: "Antivirus system detected malware in incoming email attachments. Quarantine measures activated.",
-      severity: "High",
-      status: "In Progress", 
-      priority: "P2",
-      assignee: "Sarah Johnson",
-      reporter: "Email Security",
-      category: "Malware",
-      createdAt: "2024-01-15 08:15:00",
-      updatedAt: "2024-01-15 13:45:00",
-      sla: "6 hours remaining",
-      impact: "Medium",
-      urgency: "High",
-      tags: ["Email", "Malware", "Quarantine"]
-    },
-    {
-      id: "INC-2024-003",
-      title: "Unauthorized Data Access Attempt",
-      description: "Database monitoring detected unauthorized access attempts to customer data tables.",
-      severity: "High",
-      status: "Containment",
-      priority: "P1", 
-      assignee: "Mike Wilson",
-      reporter: "DB Monitor",
-      category: "Data Breach",
-      createdAt: "2024-01-14 16:20:00",
-      updatedAt: "2024-01-15 12:10:00",
-      sla: "1 hour remaining",
-      impact: "High",
-      urgency: "Critical",
-      tags: ["Database", "Privacy", "Customer Data"]
-    },
-    {
-      id: "INC-2024-004",
-      title: "DDoS Attack on Web Services",
-      description: "Distributed denial of service attack targeting main web application causing service degradation.",
-      severity: "Medium",
-      status: "Mitigating",
-      priority: "P2",
-      assignee: "Alex Brown",
-      reporter: "Network Team",
-      category: "Network Attack",
-      createdAt: "2024-01-14 11:30:00",
-      updatedAt: "2024-01-15 10:15:00",
-      sla: "4 hours remaining",
-      impact: "Medium",
-      urgency: "Medium",
-      tags: ["Network", "DDoS", "Web Services"]
-    },
-    {
-      id: "INC-2024-005",
-      title: "Phishing Campaign Targeting Employees",
-      description: "Coordinated phishing campaign detected targeting employee credentials with convincing fake login pages.",
-      severity: "Medium",
-      status: "Resolved",
-      priority: "P3",
-      assignee: "Lisa Davis",
-      reporter: "Security Awareness",
-      category: "Social Engineering",
-      createdAt: "2024-01-13 14:45:00",
-      updatedAt: "2024-01-14 16:30:00",
-      sla: "Completed",
-      impact: "Low",
-      urgency: "Medium",
-      tags: ["Phishing", "Social Engineering", "Training"]
+      dateReported: new Date().toISOString(),
+      affectedSystems: [],
+      timeToResolve: null
+    };
+
+    if (editingIncident) {
+      updateIncident(editingIncident.id, incidentData);
+      toast({
+        title: "Incident Updated",
+        description: "Incident has been successfully updated.",
+      });
+    } else {
+      addIncident(incidentData);
+      toast({
+        title: "Incident Created",
+        description: "New incident has been created and assigned.",
+      });
     }
-  ];
+
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      severity: "",
+      category: "",
+      assignee: "",
+      reporter: "SOC Team"
+    });
+    setEditingIncident(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleEdit = (incident: any) => {
+    setEditingIncident(incident);
+    setFormData({
+      title: incident.title,
+      description: incident.description,
+      severity: incident.severity,
+      category: incident.category,
+      assignee: incident.assignee,
+      reporter: incident.reporter
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (incidentId: string) => {
+    deleteIncident(incidentId);
+    toast({
+      title: "Incident Deleted",
+      description: "Incident has been removed from the system.",
+      variant: "destructive"
+    });
+  };
 
   const getSeverityColor = (severity: string) => {
     const colors = {
@@ -140,22 +126,12 @@ export default function IncidentManagement() {
     return colors[status as keyof typeof colors] || "status-info";
   };
 
-  const getPriorityColor = (priority: string) => {
-    const colors = {
-      "P1": "status-danger",
-      "P2": "status-warning",
-      "P3": "status-info",
-      "P4": "status-success"
-    };
-    return colors[priority as keyof typeof colors] || "status-info";
-  };
-
   const getStatusIcon = (status: string) => {
     const icons = {
       "Investigating": AlertCircle,
       "In Progress": Clock,
       "Containment": AlertTriangle,
-      "Mitigating": Target,
+      "Mitigating": AlertTriangle,
       "Resolved": CheckCircle,
       "Closed": XCircle
     };
@@ -177,7 +153,7 @@ export default function IncidentManagement() {
     total: incidents.length,
     critical: incidents.filter(i => i.severity === "Critical").length,
     open: incidents.filter(i => !["Resolved", "Closed"].includes(i.status)).length,
-    overdue: incidents.filter(i => i.sla.includes("remaining") && parseInt(i.sla) < 2).length
+    overdue: incidents.filter(i => i.status === "Investigating").length
   };
 
   return (
@@ -196,92 +172,10 @@ export default function IncidentManagement() {
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Incident
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create New Incident</DialogTitle>
-                <DialogDescription>
-                  Report a new security incident for investigation and response
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-6 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="incident-title">Incident Title *</Label>
-                    <Input id="incident-title" placeholder="Brief description of the incident" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="severity">Severity *</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select severity" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="critical">Critical</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="security-breach">Security Breach</SelectItem>
-                        <SelectItem value="malware">Malware</SelectItem>
-                        <SelectItem value="data-breach">Data Breach</SelectItem>
-                        <SelectItem value="network-attack">Network Attack</SelectItem>
-                        <SelectItem value="social-engineering">Social Engineering</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="assignee">Assignee</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Assign to..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="john-smith">John Smith</SelectItem>
-                        <SelectItem value="sarah-johnson">Sarah Johnson</SelectItem>
-                        <SelectItem value="mike-wilson">Mike Wilson</SelectItem>
-                        <SelectItem value="alex-brown">Alex Brown</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea 
-                    id="description"
-                    placeholder="Detailed description of the incident, including symptoms, affected systems, and initial observations..."
-                    className="min-h-[120px]"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-2">
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogTrigger>
-                  <Button>Create Incident</Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setIsDialogOpen(true)} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Incident
+          </Button>
         </div>
       </div>
 
@@ -333,11 +227,11 @@ export default function IncidentManagement() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Overdue SLA</p>
-                <p className="text-3xl font-bold text-danger">{incidentStats.overdue}</p>
+                <p className="text-sm text-muted-foreground">Under Investigation</p>
+                <p className="text-3xl font-bold text-info">{incidentStats.overdue}</p>
               </div>
-              <div className="p-3 bg-danger/10 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-danger" />
+              <div className="p-3 bg-info/10 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-info" />
               </div>
             </div>
           </CardContent>
@@ -409,9 +303,8 @@ export default function IncidentManagement() {
                   <th>Title & Category</th>
                   <th>Severity</th>
                   <th>Status</th>
-                  <th>Priority</th>
                   <th>Assignee</th>
-                  <th>SLA</th>
+                  <th>Reporter</th>
                   <th>Created</th>
                   <th>Actions</th>
                 </tr>
@@ -443,41 +336,19 @@ export default function IncidentManagement() {
                         </Badge>
                       </div>
                     </td>
+                    <td className="text-sm">{incident.assignee}</td>
+                    <td className="text-sm">{incident.reporter}</td>
+                    <td className="text-sm">{incident.dateReported?.split('T')[0]}</td>
                     <td>
-                      <Badge className={`status-badge ${getPriorityColor(incident.priority)}`}>
-                        {incident.priority}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{incident.assignee}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-sm">
-                        <span className={
-                          incident.sla.includes("remaining") && parseInt(incident.sla) < 2 
-                            ? "text-danger font-medium" 
-                            : "text-muted-foreground"
-                        }>
-                          {incident.sla}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-sm text-muted-foreground">
-                        <div>{incident.createdAt.split(' ')[0]}</div>
-                        <div>{incident.createdAt.split(' ')[1]}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex space-x-2">
                         <Button variant="ghost" size="sm">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(incident)}>
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(incident.id)}>
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>
@@ -488,6 +359,90 @@ export default function IncidentManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingIncident ? "Edit Incident" : "Create New Incident"}</DialogTitle>
+            <DialogDescription>
+              {editingIncident ? "Update incident information" : "Report a new security incident for investigation and response"}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="grid gap-6 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="incident-title">Incident Title *</Label>
+                <Input 
+                  id="incident-title" 
+                  placeholder="Brief description of the incident"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="severity">Severity *</Label>
+                <Select value={formData.severity} onValueChange={(value) => setFormData({...formData, severity: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Critical">Critical</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Security Breach">Security Breach</SelectItem>
+                    <SelectItem value="Malware">Malware</SelectItem>
+                    <SelectItem value="Data Breach">Data Breach</SelectItem>
+                    <SelectItem value="Network Attack">Network Attack</SelectItem>
+                    <SelectItem value="Social Engineering">Social Engineering</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="assignee">Assignee</Label>
+                <Input
+                  id="assignee"
+                  placeholder="Assigned to..."
+                  value={formData.assignee}
+                  onChange={(e) => setFormData({...formData, assignee: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description *</Label>
+              <Textarea 
+                id="description"
+                placeholder="Detailed description of the incident, including symptoms, affected systems, and initial observations..."
+                className="min-h-[120px]"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
+              <Button type="submit">{editingIncident ? "Update Incident" : "Create Incident"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

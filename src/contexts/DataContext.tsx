@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Types for all modules
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  isAuthenticated: boolean;
-}
 
 export interface Risk {
   id: string;
@@ -92,11 +85,6 @@ export interface TreatmentPlan {
 }
 
 export interface DataContextType {
-  // User & Auth
-  user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  
   // Risks
   risks: Risk[];
   addRisk: (risk: Omit<Risk, 'id'>) => void;
@@ -238,7 +226,6 @@ const mockTreatmentPlans: TreatmentPlan[] = [
 ];
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
   const [risks, setRisks] = useState<Risk[]>(mockRisks);
   const [incidents, setIncidents] = useState<Incident[]>(mockIncidents);
   const [policies, setPolicies] = useState<Policy[]>(mockPolicies);
@@ -247,11 +234,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('cisoUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-
     const savedRisks = localStorage.getItem('cisoRisks');
     if (savedRisks) {
       setRisks(JSON.parse(savedRisks));
@@ -299,27 +281,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('cisoTreatmentPlans', JSON.stringify(treatmentPlans));
   }, [treatmentPlans]);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication
-    if (email === "admin@ciso.com" && password === "password") {
-      const mockUser: User = {
-        id: "1",
-        email,
-        name: "CISO Administrator",
-        role: "Chief Information Security Officer",
-        isAuthenticated: true
-      };
-      setUser(mockUser);
-      localStorage.setItem('cisoUser', JSON.stringify(mockUser));
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('cisoUser');
-  };
 
   // Risk functions
   const addRisk = (risk: Omit<Risk, 'id'>) => {
@@ -392,9 +353,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const value: DataContextType = {
-    user,
-    login,
-    logout,
     risks,
     addRisk,
     updateRisk,

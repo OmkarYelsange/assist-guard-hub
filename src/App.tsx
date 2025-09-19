@@ -4,9 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
-import { DataProvider, useData } from "./contexts/DataContext";
+import { DataProvider } from "./contexts/DataContext";
 import Index from "./pages/Index";
-import Login from "./pages/auth/Login";
 import NotFound from "./pages/NotFound";
 
 // Risk Management
@@ -36,12 +35,6 @@ import EvidenceRepository from "./pages/compliance/EvidenceRepository";
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { user } = useData();
-
-  if (!user?.isAuthenticated) {
-    return <Login />;
-  }
-
   return (
     <Layout>
       <Routes>
