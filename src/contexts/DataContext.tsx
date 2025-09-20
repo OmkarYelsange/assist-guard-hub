@@ -84,6 +84,76 @@ export interface TreatmentPlan {
   lastUpdated: string;
 }
 
+export interface SecurityMonitoringAlert {
+  id: string;
+  timestamp: string;
+  severity: string;
+  source: string;
+  message: string;
+  status: string;
+  category: string;
+}
+
+export interface ThreatIntelligence {
+  id: string;
+  name: string;
+  severity: string;
+  category: string;
+  firstSeen: string;
+  lastSeen: string;
+  confidence: string;
+  targets: string;
+  description: string;
+  indicators: number;
+  geography: string;
+  attribution: string;
+  status: string;
+}
+
+export interface Committee {
+  id: string;
+  name: string;
+  type: string;
+  chair: string;
+  members: string[];
+  meetingFrequency: string;
+  lastMeeting: string;
+  nextMeeting: string;
+  status: string;
+  charter: string;
+  responsibilities: string[];
+}
+
+export interface ComplianceFramework {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: string;
+  compliance: number;
+  totalControls: number;
+  implementedControls: number;
+  version: string;
+  certificationDate: string;
+  nextAudit: string;
+  auditor: string;
+}
+
+export interface Evidence {
+  id: string;
+  title: string;
+  type: string;
+  framework: string;
+  control: string;
+  description: string;
+  owner: string;
+  uploadDate: string;
+  lastReviewed: string;
+  status: string;
+  fileSize: string;
+  tags: string[];
+}
+
 export interface DataContextType {
   // Risks
   risks: Risk[];
@@ -114,6 +184,36 @@ export interface DataContextType {
   addTreatmentPlan: (plan: Omit<TreatmentPlan, 'id'>) => void;
   updateTreatmentPlan: (id: string, plan: Partial<TreatmentPlan>) => void;
   deleteTreatmentPlan: (id: string) => void;
+
+  // Security Monitoring Alerts
+  alerts: SecurityMonitoringAlert[];
+  addAlert: (alert: Omit<SecurityMonitoringAlert, 'id'>) => void;
+  updateAlert: (id: string, alert: Partial<SecurityMonitoringAlert>) => void;
+  deleteAlert: (id: string) => void;
+
+  // Threat Intelligence
+  threats: ThreatIntelligence[];
+  addThreat: (threat: Omit<ThreatIntelligence, 'id'>) => void;
+  updateThreat: (id: string, threat: Partial<ThreatIntelligence>) => void;
+  deleteThreat: (id: string) => void;
+
+  // Committees
+  committees: Committee[];
+  addCommittee: (committee: Omit<Committee, 'id'>) => void;
+  updateCommittee: (id: string, committee: Partial<Committee>) => void;
+  deleteCommittee: (id: string) => void;
+
+  // Compliance Frameworks
+  complianceFrameworks: ComplianceFramework[];
+  addComplianceFramework: (framework: Omit<ComplianceFramework, 'id'>) => void;
+  updateComplianceFramework: (id: string, framework: Partial<ComplianceFramework>) => void;
+  deleteComplianceFramework: (id: string) => void;
+
+  // Evidence
+  evidence: Evidence[];
+  addEvidence: (evidence: Omit<Evidence, 'id'>) => void;
+  updateEvidence: (id: string, evidence: Partial<Evidence>) => void;
+  deleteEvidence: (id: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -225,12 +325,106 @@ const mockTreatmentPlans: TreatmentPlan[] = [
   }
 ];
 
+const mockAlerts: SecurityMonitoringAlert[] = [
+  {
+    id: "ALT-2024-001",
+    timestamp: "15:42:33",
+    severity: "Critical",
+    source: "Network Monitor",
+    message: "Unusual traffic spike detected from external IP 192.168.1.100",
+    status: "Active",
+    category: "Network Anomaly"
+  },
+  {
+    id: "ALT-2024-002",
+    timestamp: "15:41:15",
+    severity: "High",
+    source: "SIEM",
+    message: "Failed authentication attempts exceed threshold for user 'admin'",
+    status: "Investigating",
+    category: "Authentication"
+  }
+];
+
+const mockThreats: ThreatIntelligence[] = [
+  {
+    id: "TI-2024-001",
+    name: "APT29 Cozy Bear Campaign",
+    severity: "Critical",
+    category: "APT",
+    firstSeen: "2024-01-10",
+    lastSeen: "2024-01-15",
+    confidence: "High",
+    targets: "Government, Healthcare",
+    description: "Sophisticated phishing campaign targeting government entities",
+    indicators: 47,
+    geography: "Global",
+    attribution: "Russia-linked APT29",
+    status: "Active"
+  }
+];
+
+const mockCommittees: Committee[] = [
+  {
+    id: "COM-001",
+    name: "Information Security Steering Committee",
+    type: "Executive Committee",
+    chair: "Chief Information Security Officer",
+    members: ["CISO", "CTO", "Legal Counsel", "HR Director"],
+    meetingFrequency: "Monthly",
+    lastMeeting: "2024-01-15",
+    nextMeeting: "2024-02-15",
+    status: "Active",
+    charter: "Provide strategic oversight and governance for information security initiatives",
+    responsibilities: ["Policy approval", "Risk oversight", "Budget allocation", "Strategic planning"]
+  }
+];
+
+const mockComplianceFrameworks: ComplianceFramework[] = [
+  {
+    id: "ISO-27001",
+    name: "ISO/IEC 27001:2022",
+    description: "Information Security Management Systems - Requirements",
+    category: "Information Security",
+    status: "Implemented",
+    compliance: 94,
+    totalControls: 114,
+    implementedControls: 107,
+    version: "2022",
+    certificationDate: "2023-10-15",
+    nextAudit: "2024-10-15",
+    auditor: "BSI Group"
+  }
+];
+
+const mockEvidence: Evidence[] = [
+  {
+    id: "EVD-001",
+    title: "Security Awareness Training Records",
+    type: "Training Records",
+    framework: "ISO 27001",
+    control: "A.7.2.2",
+    description: "Employee security awareness training completion records and certificates",
+    owner: "HR Security Team",
+    uploadDate: "2024-01-15",
+    lastReviewed: "2024-01-15",
+    status: "Current",
+    fileSize: "2.3 MB",
+    tags: ["Training", "HR", "Security Awareness"]
+  }
+];
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [risks, setRisks] = useState<Risk[]>(mockRisks);
   const [incidents, setIncidents] = useState<Incident[]>(mockIncidents);
   const [policies, setPolicies] = useState<Policy[]>(mockPolicies);
   const [audits, setAudits] = useState<Audit[]>(mockAudits);
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>(mockTreatmentPlans);
+  const [alerts, setAlerts] = useState<SecurityMonitoringAlert[]>(mockAlerts);
+  const [threats, setThreats] = useState<ThreatIntelligence[]>(mockThreats);
+  const [committees, setCommittees] = useState<Committee[]>(mockCommittees);
+  const [complianceFrameworks, setComplianceFrameworks] = useState<ComplianceFramework[]>(mockComplianceFrameworks);
+  const [evidence, setEvidence] = useState<Evidence[]>(mockEvidence);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -280,6 +474,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('cisoTreatmentPlans', JSON.stringify(treatmentPlans));
   }, [treatmentPlans]);
+
+  useEffect(() => {
+    localStorage.setItem('cisoAlerts', JSON.stringify(alerts));
+  }, [alerts]);
+
+  useEffect(() => {
+    localStorage.setItem('cisoThreats', JSON.stringify(threats));
+  }, [threats]);
+
+  useEffect(() => {
+    localStorage.setItem('cisoCommittees', JSON.stringify(committees));
+  }, [committees]);
+
+  useEffect(() => {
+    localStorage.setItem('cisoComplianceFrameworks', JSON.stringify(complianceFrameworks));
+  }, [complianceFrameworks]);
+
+  useEffect(() => {
+    localStorage.setItem('cisoEvidence', JSON.stringify(evidence));
+  }, [evidence]);
 
 
   // Risk functions
@@ -352,6 +566,76 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setTreatmentPlans(prev => prev.filter(plan => plan.id !== id));
   };
 
+  // Alert functions
+  const addAlert = (alert: Omit<SecurityMonitoringAlert, 'id'>) => {
+    const newAlert = { ...alert, id: `ALT-${Date.now()}` };
+    setAlerts(prev => [...prev, newAlert]);
+  };
+
+  const updateAlert = (id: string, updatedAlert: Partial<SecurityMonitoringAlert>) => {
+    setAlerts(prev => prev.map(alert => alert.id === id ? { ...alert, ...updatedAlert } : alert));
+  };
+
+  const deleteAlert = (id: string) => {
+    setAlerts(prev => prev.filter(alert => alert.id !== id));
+  };
+
+  // Threat functions
+  const addThreat = (threat: Omit<ThreatIntelligence, 'id'>) => {
+    const newThreat = { ...threat, id: `TI-${Date.now()}` };
+    setThreats(prev => [...prev, newThreat]);
+  };
+
+  const updateThreat = (id: string, updatedThreat: Partial<ThreatIntelligence>) => {
+    setThreats(prev => prev.map(threat => threat.id === id ? { ...threat, ...updatedThreat } : threat));
+  };
+
+  const deleteThreat = (id: string) => {
+    setThreats(prev => prev.filter(threat => threat.id !== id));
+  };
+
+  // Committee functions
+  const addCommittee = (committee: Omit<Committee, 'id'>) => {
+    const newCommittee = { ...committee, id: `COM-${Date.now()}` };
+    setCommittees(prev => [...prev, newCommittee]);
+  };
+
+  const updateCommittee = (id: string, updatedCommittee: Partial<Committee>) => {
+    setCommittees(prev => prev.map(committee => committee.id === id ? { ...committee, ...updatedCommittee } : committee));
+  };
+
+  const deleteCommittee = (id: string) => {
+    setCommittees(prev => prev.filter(committee => committee.id !== id));
+  };
+
+  // Compliance Framework functions
+  const addComplianceFramework = (framework: Omit<ComplianceFramework, 'id'>) => {
+    const newFramework = { ...framework, id: `FW-${Date.now()}` };
+    setComplianceFrameworks(prev => [...prev, newFramework]);
+  };
+
+  const updateComplianceFramework = (id: string, updatedFramework: Partial<ComplianceFramework>) => {
+    setComplianceFrameworks(prev => prev.map(framework => framework.id === id ? { ...framework, ...updatedFramework } : framework));
+  };
+
+  const deleteComplianceFramework = (id: string) => {
+    setComplianceFrameworks(prev => prev.filter(framework => framework.id !== id));
+  };
+
+  // Evidence functions
+  const addEvidence = (evidenceItem: Omit<Evidence, 'id'>) => {
+    const newEvidence = { ...evidenceItem, id: `EVD-${Date.now()}` };
+    setEvidence(prev => [...prev, newEvidence]);
+  };
+
+  const updateEvidence = (id: string, updatedEvidence: Partial<Evidence>) => {
+    setEvidence(prev => prev.map(evidence => evidence.id === id ? { ...evidence, ...updatedEvidence } : evidence));
+  };
+
+  const deleteEvidence = (id: string) => {
+    setEvidence(prev => prev.filter(evidence => evidence.id !== id));
+  };
+
   const value: DataContextType = {
     risks,
     addRisk,
@@ -373,6 +657,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addTreatmentPlan,
     updateTreatmentPlan,
     deleteTreatmentPlan,
+    alerts,
+    addAlert,
+    updateAlert,
+    deleteAlert,
+    threats,
+    addThreat,
+    updateThreat,
+    deleteThreat,
+    committees,
+    addCommittee,
+    updateCommittee,
+    deleteCommittee,
+    complianceFrameworks,
+    addComplianceFramework,
+    updateComplianceFramework,
+    deleteComplianceFramework,
+    evidence,
+    addEvidence,
+    updateEvidence,
+    deleteEvidence,
   };
 
   return (
