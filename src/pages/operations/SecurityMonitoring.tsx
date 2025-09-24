@@ -1,8 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useData } from "@/contexts/DataContext";
 import { 
   Activity, 
   Shield, 
@@ -18,10 +25,106 @@ import {
   RefreshCw,
   Settings,
   Bell,
-  Globe
+  Globe,
+  Plus,
+  Edit,
+  Trash2,
+  Search
 } from "lucide-react";
 
 export default function SecurityMonitoring() {
+  const { securityAlerts, addSecurityAlert, updateSecurityAlert, deleteSecurityAlert } = useData();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [severityFilter, setSeverityFilter] = useState("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAlert, setEditingAlert] = useState<any>(null);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    source: "",
+    message: "",
+    severity: "Medium",
+    category: "",
+    status: "Active"
+  });
+
+  const resetForm = () => {
+    setFormData({
+      source: "",
+      message: "",
+      severity: "Medium",
+      category: "",
+      status: "Active"
+    });
+    setEditingAlert(null);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.source || !formData.message || !formData.category) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const alertData = {
+      ...formData,
+      timestamp: new Date().toLocaleTimeString(),
+      id: editingAlert ? editingAlert.id : `ALT-${Date.now()}`
+    };
+
+    if (editingAlert) {
+      updateSecurityAlert(editingAlert.id, alertData);
+      toast({
+        title: "Success",
+        description: "Alert updated successfully",
+      });
+    } else {
+      addSecurityAlert(alertData);
+      toast({
+        title: "Success",
+        description: "Alert created successfully",
+      });
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
+  };
+
+  const handleEdit = (alert: any) => {
+    setEditingAlert(alert);
+    setFormData({
+      source: alert.source,
+      message: alert.message,
+      severity: alert.severity,
+      category: alert.category,
+      status: alert.status
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (alertId: string) => {
+    if (window.confirm('Are you sure you want to delete this alert?')) {
+      deleteSecurityAlert(alertId);
+      toast({
+        title: "Success",
+        description: "Alert deleted successfully",
+      });
+    }
+  };
+
+  const filteredAlerts = securityAlerts.filter(alert => {
+    const matchesSearch = alert.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         alert.source.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSeverity = severityFilter === "all" || alert.severity === severityFilter;
+    return matchesSearch && matchesSeverity;
+  });
+
   const systemHealth = [
     {
       name: "SIEM Platform",
@@ -76,54 +179,6 @@ export default function SecurityMonitoring() {
       alerts: 0,
       icon: Database,
       color: "success"
-    }
-  ];
-
-  const realtimeAlerts = [
-    {
-      id: "ALT-2024-001",
-      timestamp: "15:42:33",
-      severity: "Critical",
-      source: "Network Monitor",
-      message: "Unusual traffic spike detected from external IP 192.168.1.100",
-      status: "Active",
-      category: "Network Anomaly"
-    },
-    {
-      id: "ALT-2024-002", 
-      timestamp: "15:41:15",
-      severity: "High",
-      source: "SIEM",
-      message: "Failed authentication attempts exceed threshold for user 'admin'",
-      status: "Investigating",
-      category: "Authentication"
-    },
-    {
-      id: "ALT-2024-003",
-      timestamp: "15:39:47",
-      severity: "Medium",
-      source: "Endpoint",
-      message: "Suspicious process execution detected on workstation WS-001",
-      status: "Active",
-      category: "Malware"
-    },
-    {
-      id: "ALT-2024-004",
-      timestamp: "15:38:22",
-      severity: "Low",
-      source: "Web Filter",
-      message: "Access attempt to blocked website category: Malware",
-      status: "Resolved",
-      category: "Web Security"
-    },
-    {
-      id: "ALT-2024-005",
-      timestamp: "15:36:58",
-      severity: "Medium",
-      source: "DLP",
-      message: "Sensitive data transmission detected - Credit card patterns",
-      status: "Investigating",
-      category: "Data Loss"
     }
   ];
 
@@ -192,10 +247,96 @@ export default function SecurityMonitoring() {
             <Settings className="h-4 w-4 mr-2" />
             Configure Alerts
           </Button>
-          <Button className="w-full sm:w-auto">
-            <Eye className="h-4 w-4 mr-2" />
-            View Dashboard
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full sm:w-auto" onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Alert
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>{editingAlert ? 'Edit Alert' : 'Create New Alert'}</DialogTitle>
+                <DialogDescription>
+                  {editingAlert ? 'Update alert details' : 'Create a new security alert for monitoring'}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="alert-source">Source *</Label>
+                    <Input 
+                      id="alert-source" 
+                      placeholder="Alert source"
+                      value={formData.source}
+                      onChange={(e) => setFormData({...formData, source: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="alert-category">Category *</Label>
+                    <Input 
+                      id="alert-category" 
+                      placeholder="Alert category"
+                      value={formData.category}
+                      onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="severity">Severity</Label>
+                    <Select value={formData.severity} onValueChange={(value) => setFormData({...formData, severity: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Critical">Critical</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Investigating">Investigating</SelectItem>
+                        <SelectItem value="Resolved">Resolved</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="alert-message">Message *</Label>
+                  <Input 
+                    id="alert-message"
+                    placeholder="Alert message description..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    {editingAlert ? 'Update Alert' : 'Create Alert'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -266,8 +407,36 @@ export default function SecurityMonitoring() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Search and Filter */}
+              <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-y-0 md:space-x-4 mb-6">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Search alerts..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                
+                <Select value={severityFilter} onValueChange={setSeverityFilter}>
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Filter by Severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Severities</SelectItem>
+                    <SelectItem value="Critical">Critical</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-4">
-                {realtimeAlerts.map((alert) => (
+                {filteredAlerts.map((alert) => (
                   <div key={alert.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
@@ -297,12 +466,21 @@ export default function SecurityMonitoring() {
                       <Button variant="ghost" size="sm">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Zap className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(alert)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(alert.id)}>
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 ))}
+                
+                {filteredAlerts.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No alerts found matching your criteria.
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

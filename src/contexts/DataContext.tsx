@@ -142,16 +142,19 @@ export interface ComplianceFramework {
 export interface Evidence {
   id: string;
   title: string;
-  type: string;
-  framework: string;
-  control: string;
   description: string;
+  type: string;
+  category: string;
   owner: string;
-  uploadDate: string;
-  lastReviewed: string;
+  framework?: string;
+  control?: string;
   status: string;
+  confidentiality: string;
+  createdDate: string;
+  lastModified: string;
+  version: string;
   fileSize: string;
-  tags: string[];
+  tags?: string[];
 }
 
 export interface DataContextType {
@@ -186,10 +189,10 @@ export interface DataContextType {
   deleteTreatmentPlan: (id: string) => void;
 
   // Security Monitoring Alerts
-  alerts: SecurityMonitoringAlert[];
-  addAlert: (alert: Omit<SecurityMonitoringAlert, 'id'>) => void;
-  updateAlert: (id: string, alert: Partial<SecurityMonitoringAlert>) => void;
-  deleteAlert: (id: string) => void;
+  securityAlerts: SecurityMonitoringAlert[];
+  addSecurityAlert: (alert: Omit<SecurityMonitoringAlert, 'id'>) => void;
+  updateSecurityAlert: (id: string, alert: Partial<SecurityMonitoringAlert>) => void;
+  deleteSecurityAlert: (id: string) => void;
 
   // Threat Intelligence
   threats: ThreatIntelligence[];
@@ -420,7 +423,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [policies, setPolicies] = useState<Policy[]>(mockPolicies);
   const [audits, setAudits] = useState<Audit[]>(mockAudits);
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>(mockTreatmentPlans);
-  const [alerts, setAlerts] = useState<SecurityMonitoringAlert[]>(mockAlerts);
+  const [securityAlerts, setSecurityAlerts] = useState<SecurityMonitoringAlert[]>(mockAlerts);
   const [threats, setThreats] = useState<ThreatIntelligence[]>(mockThreats);
   const [committees, setCommittees] = useState<Committee[]>(mockCommittees);
   const [complianceFrameworks, setComplianceFrameworks] = useState<ComplianceFramework[]>(mockComplianceFrameworks);
@@ -476,8 +479,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [treatmentPlans]);
 
   useEffect(() => {
-    localStorage.setItem('cisoAlerts', JSON.stringify(alerts));
-  }, [alerts]);
+    localStorage.setItem('cisoAlerts', JSON.stringify(securityAlerts));
+  }, [securityAlerts]);
 
   useEffect(() => {
     localStorage.setItem('cisoThreats', JSON.stringify(threats));
